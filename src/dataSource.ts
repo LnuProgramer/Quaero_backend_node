@@ -1,12 +1,12 @@
 import "reflect-metadata";
 import dotenv from "dotenv";
 import { DataSource } from "typeorm";
-import { User } from "./Entities/Users.js";
-import { UserInfo } from "./Entities/UserAdditionalInfo.js";
-import { Vacancy } from "./Entities/JobVacancies.js"
-import { VacancyLanguage } from "./Entities/JobLanguages.js"
-import { JobCategory } from  "./Entities/JobCategories.js"
-import { EmploymentType } from  "./Entities/EmploymentTypes.js"
+import { User } from "./entities/Users.js";
+import { UserInfo } from "./entities/UserAdditionalInfo.js";
+import { Vacancy } from "./entities/JobVacancies.js"
+import { VacancyLanguage } from "./entities/JobLanguages.js"
+import { JobCategory } from "./entities/JobCategories.js"
+import { EmploymentType } from "./entities/EmploymentTypes.js"
 
 dotenv.config();
 

@@ -22,10 +22,10 @@ export class User {
     @Column({ name: 'last_name', type: 'varchar', length: 255 })
     lastName!: string;
 
-    @Column({ type: 'varchar', length: 255 })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     city!: string;
 
-    @Column({ type: 'varchar', length: 255 })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     country!: string;
 
     @Column({ type: 'varchar', length: 255, unique: true })

@@ -2,14 +2,18 @@ import express from "express";
 import cors from "cors";
 import 'reflect-metadata';
 import { AppDataSource } from "./dataSource.js";
-const port = 8000;
+import SecurityRouter from "./routes/Security.routes.js";
+const port = 8080;
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/auth", SecurityRouter);
 AppDataSource.initialize()
-    .catch((err) => {
-    console.log("Error during Data Source initialization:", err);
-});
-app.listen(port, () => {
-});
+    .then(() => {
+    console.log("✅ Database connected");
+    app.listen(port, () => {
+        console.log(`🚀 Server is running on port: ${port}`);
+    });
+})
+    .catch((error) => console.error("❌ Database connection error:", error));
 //# sourceMappingURL=index.js.map
