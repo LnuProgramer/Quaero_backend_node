@@ -6,6 +6,6 @@ const SecurityRouter = express.Router();
 
 SecurityRouter.post("/signUp", hashPassword, signUp);
 SecurityRouter.post("/signIn", signIn);
-SecurityRouter.get("/updateAccessToken/:refreshToken", updateAccessToken);
+SecurityRouter.get("/updateAccessToken", updateAccessToken);
 
 export default SecurityRouter;

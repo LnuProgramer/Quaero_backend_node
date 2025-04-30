@@ -80,10 +80,10 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
 
 export const updateAccessToken = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { refreshToken } = req.params;
+        const { refreshToken } = req.query;
 
-        if (!refreshToken) {
-            res.status(400).json({ message: "Refresh token is required" });
+        if (typeof refreshToken !== 'string') {
+            res.status(400).json({ message: "Refresh token is required and must be a string" });
             return;
         }
 
