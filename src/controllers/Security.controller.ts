@@ -40,7 +40,6 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
         });
     } catch (error) {
         res.status(500).json({ message: "Registration failed", error });
-        return
     }
 };
 
@@ -48,9 +47,9 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 export const signIn = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
-        const userRepository = AppDataSource.getRepository(User);
+        const userRepo = AppDataSource.getRepository(User);
 
-        const user = await userRepository.findOne({ where: { email } });
+        const user = await userRepo.findOne({ where: { email } });
 
         if (!user) {
             res.status(404).json({ message: "User not found" });
@@ -75,14 +74,13 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
         });
     } catch (error) {
         res.status(500).json({ message: "Sign-in failed", error });
-        return
     }
 };
 
 
 export const updateAccessToken = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { refreshToken } = req.body;
+        const { refreshToken } = req.params;
 
         if (!refreshToken) {
             res.status(400).json({ message: "Refresh token is required" });
@@ -111,6 +109,5 @@ export const updateAccessToken = async (req: Request, res: Response): Promise<vo
         }
     } catch (error) {
         res.status(500).json({ message: "Token refresh failed", error });
-        return;
     }
 };
