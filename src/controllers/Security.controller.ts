@@ -29,7 +29,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
         const newUser = userRepo.create({ firstName, lastName, email, password, role });
         await userRepo.save(newUser);
 
-        const { accessToken, refreshToken } = generateTokens({ userId: newUser.id, role: newUser.role });
+        const { accessToken, refreshToken } = generateTokens({ userId: newUser.id, role: newUser.role }, true);
 
         res.status(201).json({
             userId: newUser.id,
@@ -63,7 +63,7 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
            return
         }
 
-        const { accessToken, refreshToken } = generateTokens({ userId: user.id, role: user.role });
+        const { accessToken, refreshToken } = generateTokens({ userId: user.id, role: user.role }, true);
 
         res.status(200).json({
             userId: user.id,
@@ -91,9 +91,9 @@ export const updateAccessToken = async (req: Request, res: Response): Promise<vo
             const payload =  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as MyJwtPayload;
 
             const { userId, role } = payload;
-            const tokens = generateTokens({ userId, role });
+            const accessToken = generateTokens({ userId, role }, false);
 
-            res.json(tokens);
+            res.json(accessToken);
             return
         } catch (err) {
             if (err instanceof TokenExpiredError) {

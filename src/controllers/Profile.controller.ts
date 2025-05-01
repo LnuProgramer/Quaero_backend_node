@@ -146,10 +146,8 @@ export const setAdditionalInfo = async (req: Request, res: Response): Promise<vo
 
         const infoRepo = AppDataSource.getRepository(UserInfo);
 
-        // Видаляємо стару інформацію (якщо потрібно)
         await infoRepo.delete({ user: { id: user.id } });
 
-        // Додаємо нову
         const infoEntities = additionalInfo.map((info) => {
             return infoRepo.create({ user, info });
         });
