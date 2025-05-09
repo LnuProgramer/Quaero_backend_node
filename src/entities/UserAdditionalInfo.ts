@@ -2,7 +2,7 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    OneToOne,
+    ManyToOne,
     JoinColumn
 } from 'typeorm';
 import { User } from './Users.js';
@@ -12,7 +12,7 @@ export class UserInfo {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @OneToOne(() => User)
+    @ManyToOne(() => User)
     @JoinColumn({ name: 'user_id' }) // поле зовнішнього ключа
     user!: User;
 

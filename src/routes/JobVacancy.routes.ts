@@ -3,16 +3,16 @@ import {
     getAllFilteredAndSorted, getSimilarVacanciesById,
     getVacanciesByHr,
     getVacancy,
-    SetVacancy
+    setVacancy
 } from "../controllers/JobVacancy.controller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const JobVacancyRouter = express.Router();
 
-JobVacancyRouter.post("/setVacancy/:hrId", authMiddleware, SetVacancy)
+JobVacancyRouter.post("/setVacancy/:hrId", authMiddleware, setVacancy)
 JobVacancyRouter.post("/getAllFilteredAndSorted", getAllFilteredAndSorted)
 JobVacancyRouter.get("/getVacancy/:vacancyId", getVacancy)
-JobVacancyRouter.get("/getVacanciesByHr/:hrId", getVacanciesByHr)
+JobVacancyRouter.get("/getVacanciesByHr/:hrId", authMiddleware, getVacanciesByHr)
 JobVacancyRouter.get("/getSimilarVacanciesById/:vacancyId", getSimilarVacanciesById)
 
 export default JobVacancyRouter

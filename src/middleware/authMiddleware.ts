@@ -3,7 +3,7 @@ import { verifyAccessToken } from "./verifyToken.js";
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const accessToken = req.headers.authorization?.split(" ")[1]; // Bearer <token>
-    const refreshToken = req.query.refreshToken as string | undefined;
+    const refreshToken = req.headers["x-refresh-token"] as string | undefined;
 
     const result = verifyAccessToken(accessToken, refreshToken);
 
@@ -12,7 +12,6 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         return;
     }
 
-    // Якщо токен оновлено — повертаємо новий
     if (result.newAccessToken) {
         res.setHeader("x-new-access-token", result.newAccessToken);
     }

@@ -8,12 +8,18 @@ export const getUserInfo = async (req: Request, res: Response): Promise<void> =>
 
     try {
         const userRepo = AppDataSource.getRepository(User);
+        const additionalRepo = AppDataSource.getRepository(UserInfo);
+
         const user = await userRepo.findOne({ where: { id: Number(userId) } });
 
         if (!user) {
-            res.status(404).json({ message: "User not found" });
+            res.status(404).json({ message: "User not found", id: userId });
             return;
         }
+
+        const additional = await additionalRepo.find({
+            where: { user: { id: Number(userId) } },
+        });
 
         res.json({
             id: user.id,
@@ -22,7 +28,10 @@ export const getUserInfo = async (req: Request, res: Response): Promise<void> =>
             email: user.email,
             phone: user.phone ?? "",
             country: user.country ?? "",
-            city: user.city ?? ""
+            city: user.city ?? "",
+            companyName: user.companyName ?? "",
+            description: user.description ?? "",
+            additionalInfo: additional.map((a: UserInfo) => a.info),
         });
     } catch (error) {
         res.status(500).json({ message: "Failed to get user info", error });
@@ -40,10 +49,7 @@ export const setUserInfo = async (req: Request, res: Response): Promise<void> =>
         country,
         city,
         position,
-        description,
         companyName,
-        additionalInfo,
-        role
     } = req.body;
 
     try {
@@ -63,24 +69,9 @@ export const setUserInfo = async (req: Request, res: Response): Promise<void> =>
         user.country = country;
         user.city = city;
         user.position = position;
-        user.description = description;
         user.companyName = companyName;
-        user.role = role;
 
         await userRepo.save(user);
-
-        let userInfo = await userInfoRepository.findOne({ where: { user: { id: Number(userId) } } });
-
-        if (!userInfo) {
-            userInfo = userInfoRepository.create({
-                user: user,
-                info: additionalInfo.join(", ")
-            });
-        } else {
-            userInfo.info = additionalInfo.join(", ");
-        }
-
-        await userInfoRepository.save(userInfo);
 
         res.status(200).json({ message: "User info updated successfully" });
     } catch (error) {

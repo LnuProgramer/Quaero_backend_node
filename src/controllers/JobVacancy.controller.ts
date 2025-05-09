@@ -6,7 +6,7 @@ import { EmploymentType } from "../entities/EmploymentTypes.js";
 import { VacancyLanguage } from "../entities/JobLanguages.js";
 import { User } from "../entities/Users.js";
 
-export const SetVacancy = async (req: Request, res: Response): Promise<void> => {
+export const setVacancy = async (req: Request, res: Response): Promise<void> => {
     const {
         positionTitle,
         salary,
