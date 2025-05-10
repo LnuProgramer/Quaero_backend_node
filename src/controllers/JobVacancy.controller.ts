@@ -95,12 +95,12 @@ export const getAllFilteredAndSorted = async (req: Request, res: Response): Prom
 
     const vacancyRepo = AppDataSource.getRepository(Vacancy);
     const languageRepo = AppDataSource.getRepository(VacancyLanguage);
-
     try {
         const queryBuilder = vacancyRepo.createQueryBuilder("vacancy")
             .leftJoinAndSelect("vacancy.category", "category")
             .leftJoinAndSelect("vacancy.employmentType", "employmentType")
-            .leftJoinAndSelect("vacancy.user", "user");
+            .leftJoinAndSelect("vacancy.user", "user")
+            .leftJoinAndSelect("vacancy.languages", "language");
 
         if (positionTitle) {
             queryBuilder.andWhere("vacancy.positionTitle ILIKE :positionTitle", { positionTitle: `%${positionTitle}%` });
@@ -116,6 +116,9 @@ export const getAllFilteredAndSorted = async (req: Request, res: Response): Prom
 
         if (employmentType) {
             queryBuilder.andWhere("employmentType.type ILIKE :employmentType", { employmentType: `%${employmentType}%` });
+        }
+        if (languageName) {
+            queryBuilder.andWhere("language.languageName ILIKE :languageName", { languageName: `%${languageName}%` });
         }
 
         if (minSalary !== undefined) {
@@ -141,10 +144,10 @@ export const getAllFilteredAndSorted = async (req: Request, res: Response): Prom
 
         const vacancyIds = vacancies.map(v => v.id);
         const languages = await languageRepo
-            .createQueryBuilder("language")
-            .where("language.vacancyId IN (:...vacancyIds)", { vacancyIds })
+            .createQueryBuilder("languages")
+            .where("languages.vacancy_id IN (:...vacancyIds)", { vacancyIds })
             .getMany();
-
+        console.log(languages, "PENIS")
         const content = vacancies.map(vacancy => ({
             id: vacancy.id,
             positionTitle: vacancy.positionTitle,
@@ -246,13 +249,19 @@ export const getVacanciesByHr = async (req: Request, res: Response): Promise<voi
     const page = parseInt(req.query.page as string) || 0;
     const size = parseInt(req.query.size as string) || 10;
 
+    const hrIdNum = Number(hrId);
+    if (isNaN(hrIdNum)) {
+        res.status(400).json({ message: "Invalid HR ID" });
+        return;
+    }
+
     try {
         const vacancyRepo = AppDataSource.getRepository(Vacancy);
         const languageRepo = AppDataSource.getRepository(VacancyLanguage);
 
         const [vacancies, total] = await vacancyRepo.findAndCount({
-            where: { user: { id: Number(hrId) } },
-            relations: ["category", "employmentType"],
+            where: { user: { id: hrIdNum } },
+            relations: ["category", "employmentType", "user"],
             skip: page * size,
             take: size,
             order: { datePosted: "DESC" }
@@ -260,35 +269,40 @@ export const getVacanciesByHr = async (req: Request, res: Response): Promise<voi
 
         const content = await Promise.all(
             vacancies.map(async (vacancy) => {
-                const languages = await languageRepo.find({
-                    where: { vacancy: { id: vacancy.id } }
-                });
+                try {
+                    const languages = await languageRepo.find({
+                        where: { vacancy: { id: vacancy.id } }
+                    });
 
-                return {
-                    id: vacancy.id,
-                    positionTitle: vacancy.positionTitle,
-                    salary: vacancy.salary,
-                    description: vacancy.description,
-                    companyName: vacancy.companyName,
-                    datePosted: vacancy.datePosted,
-                    categoryName: vacancy.category.name,
-                    yearsOfExperience: vacancy.yearsOfExperience,
-                    employmentTypeName: vacancy.employmentType.type,
-                    languages: languages.map(l => ({
-                        languageName: l.languageName,
-                        languageLevel: l.languageLevel
-                    }))
-                };
+                    return {
+                        id: vacancy.id,
+                        positionTitle: vacancy.positionTitle,
+                        salary: vacancy.salary,
+                        description: vacancy.description,
+                        companyName: vacancy.companyName,
+                        datePosted: vacancy.datePosted,
+                        categoryName: vacancy.category?.name ?? "Uncategorized",
+                        yearsOfExperience: vacancy.yearsOfExperience,
+                        employmentTypeName: vacancy.employmentType?.type ?? "No employment type",
+                        languages: languages.map(l => ({
+                            languageName: l.languageName,
+                            languageLevel: l.languageLevel
+                        }))
+                    };
+                } catch (innerError) {
+                    return null;
+                }
             })
         );
 
+        const filteredContent = content.filter(item => item !== null);
         const totalPages = Math.ceil(total / size);
 
         res.status(200).json({
             totalPages,
             totalElements: total,
             size,
-            content,
+            content: filteredContent,
             number: page,
             sort: {
                 empty: true,
@@ -309,11 +323,20 @@ export const getVacanciesByHr = async (req: Request, res: Response): Promise<voi
                 paged: true,
                 unpaged: false
             },
-            numberOfElements: content.length,
-            empty: content.length === 0
+            numberOfElements: filteredContent.length,
+            empty: filteredContent.length === 0
         });
+
     } catch (error) {
-        res.status(500).json({ message: "Error fetching HR vacancies", error });
+        console.error("❌ Глобальна помилка при отриманні вакансій HR:", error);
+        if (error instanceof Error) {
+            console.error("🧠 Stack trace:", error.stack);
+        }
+
+        res.status(500).json({
+            message: "Error fetching HR vacancies",
+            error: error instanceof Error ? error.message : error
+        });
     }
 };
 

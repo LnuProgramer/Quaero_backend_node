@@ -2,13 +2,15 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    ManyToOne,
+    OneToMany,
     JoinColumn,
+    ManyToOne,
     CreateDateColumn,
 } from 'typeorm';
-import { User } from './Users.js';
 import { JobCategory } from './JobCategories.js';
 import { EmploymentType } from './EmploymentTypes.js';
+import { User } from './Users.js';
+import { VacancyLanguage } from './JobLanguages.js';
 
 @Entity('job_vacancies')
 export class Vacancy {
@@ -44,4 +46,7 @@ export class Vacancy {
     @ManyToOne(() => User)
     @JoinColumn({ name: 'user_id' })
     user!: User;
+
+    @OneToMany(() => VacancyLanguage, (language) => language.vacancy)
+    languages!: VacancyLanguage[];
 }

@@ -54,7 +54,7 @@ export const setUserInfo = async (req: Request, res: Response): Promise<void> =>
 
     try {
         const userRepo = AppDataSource.getRepository(User);
-        const userInfoRepository = AppDataSource.getRepository(UserInfo);
+        const  userInfoRepository = AppDataSource.getRepository(UserInfo);
 
         const user = await userRepo.findOne({ where: { id: Number(userId) } });
         if (!user) {

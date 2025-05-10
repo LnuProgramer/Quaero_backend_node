@@ -2,20 +2,18 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    OneToMany,
+    ManyToOne,
     JoinColumn,
 } from 'typeorm';
-import { Vacancy } from './JobVacancies.js';
 
 @Entity('job_languages')
 export class VacancyLanguage {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @OneToMany(() => VacancyLanguage, (language) => language.vacancy)
-    languages!: VacancyLanguage[];
+    @ManyToOne('Vacancy', 'languages', { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'vacancy_id' })
-    vacancy!: Vacancy;
+    vacancy!: any; // або Vacancy, якщо тип вже доступний
 
     @Column({ name: 'language_name', type: 'varchar', length: 100 })
     languageName!: string;
