@@ -15,5 +15,6 @@ export class MlModel {
     @Column({ name: 'weight_bin_base64', type: 'longtext' })
     weightBinBase64!: string;
 
-
+    @Column({name: 'pages', type: `simple-json`})
+    pages!: string[];
 }

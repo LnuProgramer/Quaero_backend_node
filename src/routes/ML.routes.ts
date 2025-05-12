@@ -1,11 +1,10 @@
 import express from 'express';
-import { trainAndSaveModel, predictNextPage} from "../controllers/ML.controller.js";
-import { validateModelData } from "../middleware/validateModelData.js";
+import { trainAndSaveModel, predictNextPage, saveTransition } from "../controllers/ML.controller.js";
 
 const MLRoutes = express.Router();
 
 MLRoutes.post('/train', trainAndSaveModel);
-
-MLRoutes.post('/predict', validateModelData, predictNextPage);
+MLRoutes.post('/predict', predictNextPage);
+MLRoutes.post('/save-transition', saveTransition);
 
 export default MLRoutes;

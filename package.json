@@ -10,7 +10,8 @@
     "predev": "npm run build",
     "dev": "concurrently \"npx tsc -w\" \"nodemon dist/index.js\"",
     "video": "node dist/videoServer.js",
-    "video:dev": "nodemon dist/videoServer.js"
+    "video:dev": "nodemon dist/videoServer.js",
+    "generate:transitions": "node dist/scripts/generateTransitions.js"
   },
   "keywords": [],
   "author": "",

@@ -3,7 +3,8 @@ import { MlModel } from '../entities/MLModel.js';
 import { AppDataSource } from '../dataSource.js';
 
 export const trainModel = async (data: { from: string; to: string }[]) => {
-    const pages = Array.from(new Set(data.flatMap(d => [d.from, d.to])));
+    const pages = Array.from(new Set(data.flatMap(d => [d.from, d.to]))).sort();
+    console.log(pages);
     const pageToIndex = Object.fromEntries(pages.map((p, i) => [p, i]));
 
     const xs = tf.tensor2d(data.map(d => [pageToIndex[d.from]]));
@@ -17,7 +18,7 @@ export const trainModel = async (data: { from: string; to: string }[]) => {
 
     model.compile({ loss: 'sparseCategoricalCrossentropy', optimizer: 'adam', metrics: ['accuracy'] });
 
-    await model.fit(xs, ys, { epochs: 20 });
+    await model.fit(xs, ys, { epochs: 150 });
 
     // <-- Зберігаємо модель у змінні
     let modelJson = '';
@@ -26,7 +27,7 @@ export const trainModel = async (data: { from: string; to: string }[]) => {
     await model.save(tf.io.withSaveHandler(async (artifacts) => {
         modelJson = JSON.stringify({
             modelTopology: artifacts.modelTopology,
-            weightsManifest: [{ weights: artifacts.weightSpecs }],
+            weightSpecs: artifacts.weightSpecs,
         });
 
         const weightData = artifacts.weightData!;
@@ -57,14 +58,15 @@ export const trainModel = async (data: { from: string; to: string }[]) => {
         };
     }));
 
-    return { modelJson, modelWeights };
+    return { modelJson, modelWeights, pages };
 };
 
-export const saveModelToDb = async (modelJson: string, weightBinBase64: string, modelId: number) => {
+export const saveModelToDb = async (modelJson: string, weightBinBase64: string, modelId: number, pages: string[]) => {
     const model = new MlModel();
     model.id = modelId;
     model.modelJson = modelJson;
     model.weightBinBase64 = weightBinBase64;
+    model.pages = pages
 
     await AppDataSource.getRepository(MlModel).save(model);
 };

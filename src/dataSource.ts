@@ -8,6 +8,7 @@ import { VacancyLanguage } from "./entities/JobLanguages.js"
 import { JobCategory } from "./entities/JobCategories.js"
 import { EmploymentType } from "./entities/EmploymentTypes.js"
 import { MlModel } from "./entities/MLModel.js";
+import { PageTransition } from "./entities/PageTransition.js";
 
 dotenv.config();
 
@@ -19,5 +20,5 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME,
     synchronize: true,
     logging: true,
-    entities: [User, UserInfo, Vacancy, VacancyLanguage, JobCategory, EmploymentType, MlModel],
+    entities: [User, UserInfo, Vacancy, VacancyLanguage, JobCategory, EmploymentType, MlModel, PageTransition],
 });
