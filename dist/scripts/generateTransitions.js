@@ -13,8 +13,8 @@ const weightedTransitions = {
     home: ['profile', 'catalog', 'profile', 'profile', "login"],
     catalog: ['profile', 'home', "home"],
     profile: ['settings', 'create', 'settings', 'home', "catalog"],
-    create: ['profile', 'home'],
-    settings: ['home', 'profile'],
+    create: ['profile', 'catalog', 'catalog',],
+    settings: ['home', 'profile', 'profile'],
     videoChat: ['profile', 'home'],
     login: ['home', 'home', 'profile'],
 };

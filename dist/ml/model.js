@@ -10,49 +10,51 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import * as tf from '@tensorflow/tfjs';
 import { MlModel } from '../entities/MLModel.js';
 import { AppDataSource } from '../dataSource.js';
-export const trainModel = (data) => __awaiter(void 0, void 0, void 0, function* () {
+export const trainModel = (data, options) => __awaiter(void 0, void 0, void 0, function* () {
+    const { embeddingDim = 3, learningRate = 0.1, batchSize = 2000, epochs = 100, } = options || {};
     const pages = Array.from(new Set(data.flatMap(d => [d.from, d.to]))).sort();
-    console.log(pages);
     const pageToIndex = Object.fromEntries(pages.map((p, i) => [p, i]));
-    const xs = tf.tensor2d(data.map(d => [pageToIndex[d.from]]));
-    const ys = tf.tensor2d(data.map(d => [pageToIndex[d.to]]));
+    const xs = tf.tensor2d(data.map(d => [pageToIndex[d.from]]), [data.length, 1]);
+    const ys = tf.tensor1d(data.map(d => pageToIndex[d.to]));
     const model = tf.sequential();
-    model.add(tf.layers.embedding({ inputDim: pages.length, outputDim: 4, inputLength: 1 }));
+    model.add(tf.layers.embedding({
+        inputDim: pages.length,
+        outputDim: embeddingDim,
+        inputLength: 1,
+    }));
     model.add(tf.layers.flatten());
-    model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
-    model.add(tf.layers.dense({ units: pages.length, activation: 'softmax' }));
-    model.compile({ loss: 'sparseCategoricalCrossentropy', optimizer: 'adam', metrics: ['accuracy'] });
-    yield model.fit(xs, ys, { epochs: 150 });
-    // <-- Зберігаємо модель у змінні
+    model.add(tf.layers.dense({
+        units: pages.length,
+        activation: 'softmax',
+    }));
+    model.compile({
+        loss: 'sparseCategoricalCrossentropy',
+        optimizer: tf.train.adam(learningRate),
+        metrics: ['accuracy'],
+    });
+    const history = yield model.fit(xs, ys, {
+        epochs,
+        batchSize,
+        callbacks: tf.callbacks.earlyStopping({ monitor: 'loss', patience: 5 }),
+    });
+    const trainedEpochs = history.epoch.length;
+    console.log(`Навчання завершено за ${trainedEpochs} епох`);
     let modelJson = '';
     let modelWeights = '';
     yield model.save(tf.io.withSaveHandler((artifacts) => __awaiter(void 0, void 0, void 0, function* () {
         modelJson = JSON.stringify({
             modelTopology: artifacts.modelTopology,
-            weightSpecs: artifacts.weightSpecs,
+            weightSpecs: artifacts.weightSpecs
         });
-        const weightData = artifacts.weightData;
-        let finalBuffer;
-        if (Array.isArray(weightData)) {
-            const totalLength = weightData.reduce((sum, buf) => sum + buf.byteLength, 0);
-            const joined = new Uint8Array(totalLength);
-            let offset = 0;
-            for (const ab of weightData) {
-                joined.set(new Uint8Array(ab), offset);
-                offset += ab.byteLength;
-            }
-            finalBuffer = Buffer.from(joined);
-        }
-        else {
-            finalBuffer = Buffer.from(new Uint8Array(weightData));
-        }
+        const weightData = new Uint8Array(artifacts.weightData);
+        const finalBuffer = Buffer.from(weightData);
         modelWeights = finalBuffer.toString('base64');
         return {
             modelArtifactsInfo: {
                 dateSaved: new Date(),
                 modelTopologyType: 'JSON',
                 modelTopologyBytes: JSON.stringify(artifacts.modelTopology).length,
-                weightDataBytes: finalBuffer.byteLength,
+                weightDataBytes: finalBuffer.byteLength
             }
         };
     })));

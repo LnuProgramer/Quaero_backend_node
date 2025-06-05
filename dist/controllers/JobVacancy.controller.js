@@ -110,7 +110,6 @@ export const getAllFilteredAndSorted = (req, res) => __awaiter(void 0, void 0, v
             .createQueryBuilder("languages")
             .where("languages.vacancy_id IN (:...vacancyIds)", { vacancyIds })
             .getMany();
-        console.log(languages, "PENIS");
         const content = vacancies.map(vacancy => ({
             id: vacancy.id,
             positionTitle: vacancy.positionTitle,
